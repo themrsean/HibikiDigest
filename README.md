@@ -10,6 +10,6 @@ Run the complete quality gate with `npm run check`.
 
 Run the local MCP Worker with `npm run dev` and connect a Streamable HTTP MCP client to `http://localhost:8787/mcp`. Deploy with `npm run deploy` after authenticating Wrangler with `npx wrangler login`.
 
-Slice 0B exposes only the public, static `phase0_probe` diagnostic tool.
+Phase 0 exposes the static `phase0_probe` readiness tool and two temporary visual transport probes. The public MCP endpoint is `https://hibiki-digest-phase0b.themrsean.workers.dev/mcp`.
 
 Coding agents should start with [AGENTS.md](AGENTS.md). Project requirements and durable engineering context are in [docs/](docs/).

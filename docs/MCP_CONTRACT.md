@@ -1,9 +1,12 @@
 # MCP Contract
 
-## Implemented in Slice 0B
+## Implemented diagnostic tools
 
 - `phase0_probe` takes no input and returns a deterministic static result: `{"service":"HibikiDigest","phase":"0B","status":"ready"}`.
 - It is a read-only, non-destructive, closed-domain temporary diagnostic capability. It performs no retrieval or writes.
+- `phase0_image_probe` takes no input and returns a deterministic PNG in direct MCP `image` content with a neutral inspection instruction.
+- `phase0_pdf_probe` takes no input and returns a deterministic one-page PDF in an embedded MCP `resource` with `application/pdf` and a base64 binary `blob`, plus a neutral inspection instruction.
+- The image and PDF probes are temporary Phase 0 diagnostic tools, not part of the planned production API. Their descriptions, metadata, and text results do not disclose the visual relationships under test. Both are read-only, non-destructive, and closed-domain.
 
 ## Planned production contract
 
