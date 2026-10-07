@@ -18,6 +18,8 @@ export default [
       },
       globals: {
         ...globals.node,
+        ExecutionContext: "readonly",
+        ExportedHandler: "readonly",
       },
     },
     plugins: {
@@ -39,7 +41,7 @@ export default [
         },
         {
           selector:
-            "FunctionDeclaration[returnType.typeAnnotation.type='TSVoidKeyword'] ReturnStatement[argument]",
+            ":matches(FunctionDeclaration, FunctionExpression, ArrowFunctionExpression)[returnType.typeAnnotation.type='TSVoidKeyword'] ReturnStatement",
           message: "Do not return early from void functions.",
         },
       ],

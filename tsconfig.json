@@ -6,7 +6,8 @@
     "strict": true,
     "noEmit": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "types": ["@cloudflare/workers-types", "vitest/globals"]
   },
   "include": ["src/**/*.ts", "test/**/*.ts"]
 }
