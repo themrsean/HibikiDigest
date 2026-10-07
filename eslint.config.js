@@ -18,6 +18,7 @@ export default [
       },
       globals: {
         ...globals.node,
+        D1Database: "readonly",
         ExecutionContext: "readonly",
         ExportedHandler: "readonly",
       },

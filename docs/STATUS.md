@@ -1,13 +1,13 @@
 # Project Status
 
-- Current phase: Phase 0, Slice 0C.
-- Phase 0B remote ChatGPT connectivity: **verified by the user**. ChatGPT invoked `phase0_probe` on the deployed Worker and received exactly `{"service":"HibikiDigest","phase":"0B","status":"ready"}`.
+- Current phase: Phase 1, Slice 1A — **complete** local normalized D1 schema foundation.
+- Phase 0: **complete**.
+- Phase 0B remote ChatGPT connectivity: **manually verified**. `phase0_probe` at the deployed endpoint returned exactly `{"service":"HibikiDigest","phase":"0B","status":"ready"}`.
+- Phase 0C visual transport: **manually verified**. ChatGPT interpreted the image probe as `NAMI` and the PDF probe as `MORI; green`.
 - Public Worker: `https://hibiki-digest-phase0b.themrsean.workers.dev`; MCP endpoint: `https://hibiki-digest-phase0b.themrsean.workers.dev/mcp`.
-- Slice 0C implementation: deployed to the same stateless Cloudflare Worker. It exposes exactly `phase0_probe`, `phase0_image_probe`, and `phase0_pdf_probe`. The latter two return fixed public visual fixtures without explanatory answers. No application storage or authentication is configured.
-- Local validation: focused MCP tests passed (3 tests); `npm test` passed (4 tests); typecheck, lint, format check, and `npm run check` passed; Wrangler deploy dry run bundled successfully with no bindings. The PNG and one-page PDF were rendered and visually inspected locally.
-- Deployment: `hibiki-digest-phase0b` deployed successfully, version `477e6973-2100-4637-8985-f7a93fb1ddbc`.
-- Remote SDK validation: discovered exactly three tools with read-only, non-destructive, closed-domain annotations. The unchanged 0B probe returned its exact original text result. The image tool returned `image/png` MCP image content with 1,370 decoded bytes and a valid PNG signature. The PDF tool returned an embedded `application/pdf` resource with a binary `blob`, 860 decoded bytes, and a valid PDF signature. An initial call during rollout found the image tool but not the PDF tool; a subsequent complete check passed.
-- ChatGPT image interpretation: **pending manual verification**.
-- ChatGPT PDF interpretation: **pending manual verification**.
-- Dependency warning: `npm audit --omit=dev` reports three high-severity advisories in transitive MCP OAuth client dependencies from `agents`. npm offers only a breaking `agents` change for these versions. Reassess and resolve before authentication or private-data work.
-- No production source-retrieval representation has been selected. Do not add audit tools or source integrations based on transport results alone.
+- The deployed endpoint exposes exactly `phase0_probe`, `phase0_image_probe`, and `phase0_pdf_probe`. Slice 1A does not add or remove public tools, so its visible behavior remains unchanged.
+- Validated initial production transport: direct MCP image content for ordinary visual images and embedded binary `application/pdf` MCP resources for PDF sources. Raw source content remains transient.
+- Local D1 foundation: `DB` is configured for local Wrangler use, and `migrations/0001_initial_schema.sql` creates the normalized audit, Discord observation, source-reference, performance, practice, question, poll, and anti-duplication state tables. Focused migration tests use an isolated temporary local D1 database.
+- Deferred user action: create the remote D1 database and add its account-specific database ID to Wrangler configuration in a later, explicitly scoped deployment slice. No remote D1 has been provisioned here.
+- Dependency warning: `npm audit --omit=dev` reports three high-severity transitive MCP OAuth advisories through `agents`. The available automated remediation is a breaking `agents` change; it is deferred from this schema slice.
+- Next intended slice: establish authenticated read-only source retrieval and audit workflow boundaries, after remote D1 provisioning is explicitly authorized.

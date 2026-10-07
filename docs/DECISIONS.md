@@ -12,3 +12,6 @@
 - D1 remains the intended separate application-state store for a later slice.
 - A remote MCP integration is intended.
 - Repository documentation is the persistent context for fresh coding-agent sessions.
+- Phase 0 manual ChatGPT validation confirmed direct MCP image content and embedded binary `application/pdf` resources both arrive and can be visually interpreted correctly.
+- The initial production source-delivery strategy uses direct MCP image content for ordinary visual images and embedded binary PDF MCP resources for PDF sources. Phase 1 does not add PDF-to-image conversion or a `resource_link` fallback.
+- Phase 1 begins with a normalized local D1 schema foundation before Discord or Google Sheets source integrations.

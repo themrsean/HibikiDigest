@@ -8,6 +8,8 @@ Install the supported Node.js version and run `npm ci`.
 
 Run the complete quality gate with `npm run check`.
 
+Apply the D1 schema to Wrangler's local persistent state with `npm run d1:migrate:local`. The initial migration is in `migrations/`; no remote D1 database is configured yet.
+
 Run the local MCP Worker with `npm run dev` and connect a Streamable HTTP MCP client to `http://localhost:8787/mcp`. Deploy with `npm run deploy` after authenticating Wrangler with `npx wrangler login`.
 
 Phase 0 exposes the static `phase0_probe` readiness tool and two temporary visual transport probes. The public MCP endpoint is `https://hibiki-digest-phase0b.themrsean.workers.dev/mcp`.

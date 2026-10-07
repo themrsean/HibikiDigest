@@ -7,6 +7,7 @@
 - `phase0_image_probe` takes no input and returns a deterministic PNG in direct MCP `image` content with a neutral inspection instruction.
 - `phase0_pdf_probe` takes no input and returns a deterministic one-page PDF in an embedded MCP `resource` with `application/pdf` and a base64 binary `blob`, plus a neutral inspection instruction.
 - The image and PDF probes are temporary Phase 0 diagnostic tools, not part of the planned production API. Their descriptions, metadata, and text results do not disclose the visual relationships under test. Both are read-only, non-destructive, and closed-domain.
+- Phase 1 Slice 1A adds no public MCP tools and preserves these diagnostics unchanged.
 
 ## Planned production contract
 

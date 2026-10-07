@@ -4,4 +4,11 @@
   "main": "src/index.ts",
   "compatibility_date": "2026-10-07",
   "compatibility_flags": ["nodejs_compat"],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "hibiki-digest",
+      "migrations_dir": "migrations",
+    },
+  ],
 }
