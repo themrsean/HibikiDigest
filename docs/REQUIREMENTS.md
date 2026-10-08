@@ -103,7 +103,7 @@ Readiness is a first-class, high-priority digest capability. For the next practi
 
 ## Authentication, MCP, and health
 
-Production MCP must be private/authenticated before exposing private source data or meaningful writes. Intended authentication is Google identity and an explicit approved-email allowlist in private deployment configuration; no admin UI is required. All intended users are expected to have Google accounts. Approved workspace members may run on-demand audits and update shared normalized state. No user receives Discord write capability.
+Production MCP is protected by Cloudflare Access Managed OAuth. User authentication uses a verified email identity (currently Cloudflare One-time PIN); authorization is an explicit approved-email Access policy. The approved-email policy remains private Cloudflare configuration and is never committed to this repository. The identity provider may change without changing application behavior, provided it supplies a verified email identity subject to the explicit Access policy. Approved authenticated users may run on-demand audits and update shared normalized state. No authenticated user gains Discord or Google write capability.
 
 Planned tools: `prepare_audit`, `read_sources`, `commit_audit`, `get_current_state`, `get_health`, and `get_audit_history`; see [MCP_CONTRACT.md](MCP_CONTRACT.md). Prefer high-level tools over raw Discord API plumbing. Retrieval is mechanical and ChatGPT performs semantic analysis. `commit_audit` is the only state-writing MCP operation and may modify only Hibiki normalized/internal state.
 

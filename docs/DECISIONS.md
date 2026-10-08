@@ -8,7 +8,9 @@
 - Use Prettier.
 - TDD is required for generated production behavior.
 - The MCP server is a stateless Cloudflare Worker using Streamable HTTP and the native MCP v2 Web-standard `createMcpHandler()` with explicit stateless legacy compatibility and an exact `/mcp` route guard. Use mutually compatible stable MCP v2 client/server packages directly; the Agents SDK and legacy MCP v1 SDK are unnecessary for this serving path. No Durable Object stores MCP session state.
-- Authentication is deferred only while the server exposes no private data or meaningful writes. Phase 0 contains only static public diagnostics.
+- Cloudflare Access is the production MCP authentication and authorization boundary. Access Managed OAuth provides standards-based OAuth discovery and token transport for MCP clients.
+- Authorization uses an explicit exact-email Access policy kept in private Cloudflare configuration. Application code does not host OAuth or maintain a duplicate allowlist.
+- When application behavior needs the authenticated caller, retrieve identity through Cloudflare Workers' authenticated Access context (`ctx.access` / `ctx.access.getIdentity()`).
 - D1 remains the intended separate application-state store for a later slice.
 - A remote MCP integration is intended.
 - Repository documentation is the persistent context for fresh coding-agent sessions.

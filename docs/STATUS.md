@@ -1,15 +1,25 @@
 # Project Status
 
-- Current phase: Phase 1, Slice 1B.2 — **complete**. The permanent Worker now uses the native MCP v2 handler; production dependency audit is clean, remote regression passed, and the obsolete Phase 0 Worker is retired. Production MCP tools still do not use D1.
+- Current phase: Phase 1, Slice 1C — **complete**. The permanent MCP endpoint is protected by Cloudflare Access Managed OAuth with verified-email authentication and a private exact-email Access policy. Production dependency audit is clean; no HibikiDigest production code changed in this slice.
 - Phase 0: **complete**. Phase 0B remote ChatGPT connectivity and Phase 0C visual transport were manually verified: readiness returned the expected static result; image interpretation was `NAMI`, PDF interpretation was `MORI; green`.
-- Public Worker: `https://hibiki-digest.themrsean.workers.dev`; MCP endpoint: `https://hibiki-digest.themrsean.workers.dev/mcp`.
+- Production Worker: `https://hibiki-digest.themrsean.workers.dev`; private MCP endpoint: `https://hibiki-digest.themrsean.workers.dev/mcp`.
 - The user manually connected ChatGPT to the permanent `/mcp` endpoint and invoked `phase0_probe`, receiving exactly `{"service":"HibikiDigest","phase":"0B","status":"ready"}`. After Slice 1B.2 deployment and remote regression, exactly `hibiki-digest-phase0b` was deleted; the permanent Worker remained healthy.
-- The deployed endpoint exposes exactly `phase0_probe`, `phase0_image_probe`, and `phase0_pdf_probe`. Slice 1B.2 preserves the public tool contract and fixture contents.
+- The deployed endpoint exposes exactly `phase0_probe`, `phase0_image_probe`, and `phase0_pdf_probe`. Slice 1B.2 preserves the tool contract and fixture contents.
 - Validated initial production transport remains direct MCP images and embedded binary `application/pdf` resources. Raw source content stays transient.
 - Local D1: both migrations apply successfully to a fresh isolated database. A separately populated, migration-ledger-tracked 0001 database upgrades through 0002 with foreign-key integrity and existing identifiers/relationships preserved. The persistent local Wrangler database also applied 0002 successfully.
 - Production D1 database `hibiki-digest` exists in WNAM with database ID `62a791e5-367a-487f-bb70-140b31e0d055`. `wrangler.jsonc` binds it as `DB`; migrations remain in `migrations/`.
 - [REQUIREMENTS.md](REQUIREMENTS.md) is authoritative; [DATA_MODEL.md](DATA_MODEL.md) describes the final 23-table local schema and upgrade compatibility mappings.
-- OAuth remains unimplemented. Next intended slice: authenticated MCP on the permanent hostname, with Google identity and a private approved-email allowlist, before source retrieval or meaningful writes. Do not add D1 behavior to the three temporary Phase 0 tools.
+- Private MCP access is established. Next implementation slice: authenticated read-only source retrieval, beginning with Discord mechanical retrieval. Do not add D1 behavior to the three temporary Phase 0 tools.
+
+## Slice 1C authentication architecture
+
+- The permanent `/mcp` endpoint is protected by a Cloudflare Access self-hosted application. Access Managed OAuth is enabled, and the Cloudflare One-time PIN identity provider currently supplies verified email identity under an explicit exact-email Access allow policy. The identity provider can change without changing the application contract; the durable requirement is verified email identity plus explicit Access authorization.
+- The approved-email policy remains private Cloudflare configuration. No email addresses, Access tokens, OTPs, Cloudflare credentials, or OAuth client registration details are recorded in the repository. No Google OAuth, Google Cloud project, application-hosted OAuth server, OAuth KV, or HibikiDigest OAuth secrets are used.
+- Manual OAuth discovery verification passed: unauthenticated `/mcp` returned HTTP 401 and pointed `WWW-Authenticate` to `/.well-known/cloudflare-access-protected-resource/mcp`; protected-resource metadata identified the permanent MCP resource and `https://hibikidigest.cloudflareaccess.com` authorization server; authorization-server metadata advertised `authorization_code`, `refresh_token`, PKCE S256, and dynamic client registration.
+- One-time PIN browser authentication succeeded under the exact-email policy. ChatGPT connected to the permanent endpoint using OAuth; authenticated `phase0_probe` returned phase `0B`, status `ready`.
+- Cloudflare Access authenticates and authorizes requests before Worker execution. Future application behavior requiring caller identity uses Workers authenticated Access context (`ctx.access` / `ctx.access.getIdentity()`) and fails closed if identity is unavailable. This slice does not implement caller identity plumbing.
+- Raw/private source retrieval remains behind the Access boundary. No HibikiDigest production code changed. `npm audit --omit=dev` remains clean with zero production vulnerabilities. The separate development-only Wrangler/Miniflare/Sharp librsvg advisory remains documented below.
+- Pre-change `npm run check` ran 27 tests successfully and passed typecheck, then failed lint on eight undefined-global reports (`URL`, `fetch`, `Buffer`, `console`) in the existing `.wrangler/slice1b2-remote.mjs` helper.
 
 ## Slice 1B.2 implementation and verification
 
@@ -24,7 +34,7 @@
 - Remote MCP v2 regression: passed before and after old Worker deletion. Exactly the three diagnostic tools and unchanged annotations; readiness content exactly `{"service":"HibikiDigest","phase":"0B","status":"ready"}`; PNG bytes match the fixture (1,370 bytes, valid PNG signature); embedded PDF bytes match the fixture (860 bytes, valid PDF signature). Legacy stateless calls also returned identical content for all three tools; no session headers. Unrelated paths returned plain 404 for GET and POST. No authentication was configured.
 - Verified `hibiki-digest-phase0b` by its exact named deployment history, including prior version `962a3c7e-0414-4ab2-ab15-2f1926d8b301`. `wrangler delete hibiki-digest-phase0b` reported success. The permanent Worker and its D1 database were preserved; permanent health regression passed afterward.
 - Final `npm audit --omit=dev`: **found 0 vulnerabilities**, including zero high MCP/OAuth findings. Broader `npm audit` still reports 3 high development-tool findings through `wrangler@4.148.0` → `miniflare@5.20261006.0-alpha` → `sharp@0.35.4`, [GHSA-wq5f-xc86-pv6w](https://github.com/advisories/GHSA-wq5f-xc86-pv6w) (librsvg CVE-2026-96889). This unrelated development dependency warning remains; npm proposes a breaking Wrangler downgrade, which was not applied. Installation also emitted transient old Agents peer-resolution warnings during removal and pending install-script approval notices for existing tooling; required gates and deployment succeeded without approving scripts.
-- OAuth, secrets, KV, consent flows, source retrieval, and private-data tools remain unimplemented. Authenticated MCP is the next slice.
+- Application caller-identity plumbing, source retrieval, and private-data tools remain unimplemented. Cloudflare Access handles production authentication and authorization.
 
 ## Slice 1B.1 implementation and verification
 
@@ -36,7 +46,7 @@
 - `npm run deploy -- --dry-run`: passed and showed `env.DB (hibiki-digest)`. Actual deployment succeeded at `https://hibiki-digest.themrsean.workers.dev`, version `a795134a-449b-48b9-a37a-657c55af023a`.
 - Remote MCP regression at `https://hibiki-digest.themrsean.workers.dev/mcp`: passed. Exactly `phase0_image_probe`, `phase0_pdf_probe`, and `phase0_probe` are exposed; readiness returned exactly `{"service":"HibikiDigest","phase":"0B","status":"ready"}`; image content was valid `image/png` (1,370 bytes); PDF content was an embedded binary `application/pdf` resource (860 bytes). Deployment output confirmed the `DB` binding is present.
 - `npm audit --omit=dev`: reports 3 high-severity OAuth-related transitive findings across the MCP client/SDK and `agents`; suggested fix is a breaking `agents` downgrade. Dependencies remain unchanged for the dedicated authentication/security slice.
-- Authentication/OAuth configuration against the permanent hostname is the next slice.
+- At the end of Slice 1B.1, authentication/OAuth configuration against the permanent hostname remained future work; Slice 1C records its completion.
 
 ## Slice 1B implementation and verification
 
@@ -76,7 +86,7 @@
 
 There are no intentionally deferred schema requirements from Slice 1A.2. These remaining requirements need application/deployment work, not more schema scaffolding:
 
-- Provision and verify remote D1. Configure exactly one guild, then implement authenticated source retrieval and approved-user enforcement.
+- Configure exactly one guild, then implement authenticated read-only Discord retrieval and the remaining source integrations.
 - Enforce single-audit locking, on-demand initiator capture, and successful-scheduled-only checkpoint advancement through transactions.
 - Compute fingerprints, observe pins/edits/structure, detect missing/inaccessible sources, and populate source context. Legacy metadata cannot be reconstructed without re-observation.
 - Interpret contradictions and replace unsupported facts/source edges; complete performance-plan supersession must atomically replace all old derived assignments and facts. Merely marking a plan noncurrent does not remove its rows.
