@@ -12,6 +12,6 @@ Apply the D1 schema to Wrangler's local persistent state with `npm run d1:migrat
 
 Run the local MCP Worker with `npm run dev` and connect a Streamable HTTP MCP client to `http://localhost:8787/mcp`. Deploy with `npm run deploy` after authenticating Wrangler with `npx wrangler login`.
 
-Phase 0 exposes the static `phase0_probe` readiness tool and two temporary visual transport probes. The public MCP endpoint is `https://hibiki-digest-phase0b.themrsean.workers.dev/mcp`.
+Phase 0 exposes the static `phase0_probe` readiness tool and two temporary visual transport probes. The public Worker is `https://hibiki-digest.themrsean.workers.dev`; its MCP endpoint is `https://hibiki-digest.themrsean.workers.dev/mcp`.
 
 Coding agents should start with [AGENTS.md](AGENTS.md). Project requirements and durable engineering context are in [docs/](docs/).

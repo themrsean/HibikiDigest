@@ -1,14 +1,27 @@
 # Project Status
 
-- Current phase: Phase 1, Slice 1B — **complete**. Remote D1 is provisioned, both migrations are applied, schema is verified, and the Worker is deployed with its D1 binding. Production MCP tools still do not use D1.
+- Current phase: Phase 1, Slice 1B.1 — **complete**. Remote D1 is provisioned, both migrations are applied, schema is verified, and the permanent Worker is deployed with its D1 binding. Production MCP tools still do not use D1.
 - Phase 0: **complete**. Phase 0B remote ChatGPT connectivity and Phase 0C visual transport were manually verified: readiness returned the expected static result; image interpretation was `NAMI`, PDF interpretation was `MORI; green`.
-- Public Worker: `https://hibiki-digest-phase0b.themrsean.workers.dev`; MCP endpoint: `https://hibiki-digest-phase0b.themrsean.workers.dev/mcp`.
+- Public Worker: `https://hibiki-digest.themrsean.workers.dev`; MCP endpoint: `https://hibiki-digest.themrsean.workers.dev/mcp`.
+- The old `hibiki-digest-phase0b` Worker remains temporarily available solely to avoid breaking the existing ChatGPT connection before manual reconnection. Retire it after the user confirms ChatGPT connects to the permanent endpoint.
 - The deployed endpoint exposes exactly `phase0_probe`, `phase0_image_probe`, and `phase0_pdf_probe`. Slice 1B changes no MCP handlers or public tool contract.
 - Validated initial production transport remains direct MCP images and embedded binary `application/pdf` resources. Raw source content stays transient.
 - Local D1: both migrations apply successfully to a fresh isolated database. A separately populated, migration-ledger-tracked 0001 database upgrades through 0002 with foreign-key integrity and existing identifiers/relationships preserved. The persistent local Wrangler database also applied 0002 successfully.
 - Production D1 database `hibiki-digest` exists in WNAM with database ID `62a791e5-367a-487f-bb70-140b31e0d055`. `wrangler.jsonc` binds it as `DB`; migrations remain in `migrations/`.
 - [REQUIREMENTS.md](REQUIREMENTS.md) is authoritative; [DATA_MODEL.md](DATA_MODEL.md) describes the final 23-table local schema and upgrade compatibility mappings.
-- Next intended slice: implement the authenticated production MCP boundary and source retrieval against the existing normalized D1 schema, after selecting the exact scope for that slice. Do not add D1 behavior to the three temporary Phase 0 tools.
+- Next intended slice: configure OAuth for the permanent hostname, then implement the authenticated production MCP boundary and source retrieval against the existing normalized D1 schema. Do not add D1 behavior to the three temporary Phase 0 tools.
+
+## Slice 1B.1 implementation and verification
+
+- Pre-change `npm run check`: passed (3 test files, 20 tests; typecheck, lint, and format check passed).
+- `wrangler.jsonc` now names the production Worker `hibiki-digest`; its `DB` binding, D1 database name and ID, migrations, and compatibility settings are unchanged.
+- New Worker URL: `https://hibiki-digest.themrsean.workers.dev`; MCP URL: `https://hibiki-digest.themrsean.workers.dev/mcp`.
+- `npm run d1:verify:remote`: passed; remote schema and migration verification remain valid.
+- `npm test`: passed (3 files, 20 tests). `npm run typecheck`, `npm run lint`, and `npm run format:check`: passed. Complete post-change `npm run check`: passed; the pre-change gate passed with the same results.
+- `npm run deploy -- --dry-run`: passed and showed `env.DB (hibiki-digest)`. Actual deployment succeeded at `https://hibiki-digest.themrsean.workers.dev`, version `a795134a-449b-48b9-a37a-657c55af023a`.
+- Remote MCP regression at `https://hibiki-digest.themrsean.workers.dev/mcp`: passed. Exactly `phase0_image_probe`, `phase0_pdf_probe`, and `phase0_probe` are exposed; readiness returned exactly `{"service":"HibikiDigest","phase":"0B","status":"ready"}`; image content was valid `image/png` (1,370 bytes); PDF content was an embedded binary `application/pdf` resource (860 bytes). Deployment output confirmed the `DB` binding is present.
+- `npm audit --omit=dev`: reports 3 high-severity OAuth-related transitive findings across the MCP client/SDK and `agents`; suggested fix is a breaking `agents` downgrade. Dependencies remain unchanged for the dedicated authentication/security slice.
+- Authentication/OAuth configuration against the permanent hostname is the next slice.
 
 ## Slice 1B implementation and verification
 
