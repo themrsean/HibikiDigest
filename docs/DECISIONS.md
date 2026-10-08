@@ -7,7 +7,7 @@
 - Use ESLint.
 - Use Prettier.
 - TDD is required for generated production behavior.
-- The MCP server is a stateless Cloudflare Worker using Streamable HTTP and the current `createMcpHandler()` approach. No Durable Object stores MCP session state.
+- The MCP server is a stateless Cloudflare Worker using Streamable HTTP and the native MCP v2 Web-standard `createMcpHandler()` with explicit stateless legacy compatibility and an exact `/mcp` route guard. Use mutually compatible stable MCP v2 client/server packages directly; the Agents SDK and legacy MCP v1 SDK are unnecessary for this serving path. No Durable Object stores MCP session state.
 - Authentication is deferred only while the server exposes no private data or meaningful writes. Phase 0 contains only static public diagnostics.
 - D1 remains the intended separate application-state store for a later slice.
 - A remote MCP integration is intended.

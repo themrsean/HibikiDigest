@@ -1,5 +1,4 @@
-import { McpServer } from "@modelcontextprotocol/server";
-import { createMcpHandler } from "agents/mcp/server";
+import { createMcpHandler, McpServer } from "@modelcontextprotocol/server";
 import { IMAGE_PNG_BASE64, PDF_BASE64 } from "./fixtures.js";
 
 const SERVICE_NAME = "HibikiDigest";
@@ -15,6 +14,8 @@ const DIAGNOSTIC_ANNOTATIONS = {
   openWorldHint: false,
 };
 const PDF_RESOURCE_URI = "fixture://phase0/pdf";
+const MCP_PATH = "/mcp";
+const NOT_FOUND_STATUS = 404;
 
 function createServer(): McpServer {
   const server = new McpServer({
@@ -75,6 +76,12 @@ function createServer(): McpServer {
   return server;
 }
 
-const mcpHandler = createMcpHandler(createServer, { route: "/mcp" });
+const mcpHandler = createMcpHandler(createServer, { legacy: "stateless" });
 
-export default { fetch: mcpHandler } satisfies ExportedHandler;
+export default {
+  async fetch(request: Request): Promise<Response> {
+    return new URL(request.url).pathname === MCP_PATH
+      ? mcpHandler.fetch(request)
+      : new Response("Not Found", { status: NOT_FOUND_STATUS });
+  },
+} satisfies ExportedHandler;

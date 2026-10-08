@@ -2,8 +2,29 @@ import {
   Client,
   StreamableHTTPClientTransport,
 } from "@modelcontextprotocol/client";
-import { describe, expect, it } from "vitest";
+import { McpServer } from "@modelcontextprotocol/server";
+import { describe, expect, it, vi } from "vitest";
 import worker from "../src/index.js";
+
+const nativeHandler = vi.hoisted(() => ({
+  factory: undefined as
+    import("@modelcontextprotocol/server").McpServerFactory | undefined,
+  options: undefined as
+    import("@modelcontextprotocol/server").CreateMcpHandlerOptions | undefined,
+}));
+
+vi.mock("@modelcontextprotocol/server", async (importOriginal) => {
+  const sdk =
+    await importOriginal<typeof import("@modelcontextprotocol/server")>();
+  return {
+    ...sdk,
+    createMcpHandler: ((factory, options) => {
+      nativeHandler.factory = factory;
+      nativeHandler.options = options;
+      return sdk.createMcpHandler(factory, options);
+    }) satisfies typeof sdk.createMcpHandler,
+  };
+});
 
 const MCP_URL = new URL("https://hibiki-digest.example/mcp");
 const TOOL_NAMES = ["phase0_probe", "phase0_image_probe", "phase0_pdf_probe"];
@@ -29,11 +50,64 @@ function expectNoVisualAnswer(text: string): void {
 }
 
 describe("Phase 0 MCP Worker", () => {
+  it("uses the native handler with a fresh server factory and stateless legacy compatibility", () => {
+    expect(nativeHandler.options).toEqual({ legacy: "stateless" });
+    const factory = nativeHandler.factory;
+    expect(factory).toBeDefined();
+    if (factory) {
+      const first = factory({ era: "modern" });
+      const second = factory({ era: "legacy" });
+      expect(first).toBeInstanceOf(McpServer);
+      expect(second).toBeInstanceOf(McpServer);
+      expect(first).not.toBe(second);
+    }
+  });
+
+  it.each(["/", "/authorize", "/arbitrary", "/mcp/", "/mcp/message"])(
+    "returns a non-MCP 404 for %s",
+    async (path) => {
+      const response = await worker.fetch(
+        new Request(new URL(path, MCP_URL), {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "tools/list" }),
+        }),
+      );
+      expect(response.status).toBe(404);
+      expect(await response.text()).toBe("Not Found");
+    },
+  );
+
+  it("serves legacy calls without initialization or session state", async () => {
+    for (const id of [1, 2]) {
+      const response = await worker.fetch(
+        new Request(MCP_URL, {
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            accept: "application/json, text/event-stream",
+            "mcp-protocol-version": "2025-03-26",
+          },
+          body: JSON.stringify({
+            jsonrpc: "2.0",
+            id,
+            method: "tools/call",
+            params: { name: "phase0_probe", arguments: {} },
+          }),
+        }),
+      );
+      expect(response.status).toBe(200);
+      expect(response.headers.has("mcp-session-id")).toBe(false);
+      expect(await response.text()).toContain(
+        JSON.stringify(PROBE_RESULT).replaceAll('"', '\\"'),
+      );
+    }
+  });
+
   it("connects over Streamable HTTP, exposes exactly three diagnostic tools, and preserves the 0B probe", async () => {
     const client = new Client({ name: "phase0-test", version: "1.0.0" });
     const transport = new StreamableHTTPClientTransport(MCP_URL, {
-      fetch: (url, init) =>
-        worker.fetch(new Request(url, init), {}, {} as ExecutionContext),
+      fetch: (url, init) => worker.fetch(new Request(url, init)),
     });
 
     try {
@@ -61,8 +135,7 @@ describe("Phase 0 MCP Worker", () => {
   it("delivers a valid PNG as MCP image content without a textual answer", async () => {
     const client = new Client({ name: "phase0-test", version: "1.0.0" });
     const transport = new StreamableHTTPClientTransport(MCP_URL, {
-      fetch: (url, init) =>
-        worker.fetch(new Request(url, init), {}, {} as ExecutionContext),
+      fetch: (url, init) => worker.fetch(new Request(url, init)),
     });
     try {
       await client.connect(transport);
@@ -98,8 +171,7 @@ describe("Phase 0 MCP Worker", () => {
   it("delivers a valid PDF as an embedded binary MCP resource without a textual answer", async () => {
     const client = new Client({ name: "phase0-test", version: "1.0.0" });
     const transport = new StreamableHTTPClientTransport(MCP_URL, {
-      fetch: (url, init) =>
-        worker.fetch(new Request(url, init), {}, {} as ExecutionContext),
+      fetch: (url, init) => worker.fetch(new Request(url, init)),
     });
     try {
       await client.connect(transport);
