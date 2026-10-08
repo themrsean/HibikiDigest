@@ -8,6 +8,7 @@
     {
       "binding": "DB",
       "database_name": "hibiki-digest",
+      "database_id": "62a791e5-367a-487f-bb70-140b31e0d055",
       "migrations_dir": "migrations",
     },
   ],

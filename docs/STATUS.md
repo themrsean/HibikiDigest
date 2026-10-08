@@ -1,14 +1,27 @@
 # Project Status
 
-- Current phase: Phase 1, Slice 1A.2 — **complete** local D1 requirement alignment through forward migration `0002_requirement_alignment.sql`. Committed migration 0001 remains unchanged.
+- Current phase: Phase 1, Slice 1B — **complete**. Remote D1 is provisioned, both migrations are applied, schema is verified, and the Worker is deployed with its D1 binding. Production MCP tools still do not use D1.
 - Phase 0: **complete**. Phase 0B remote ChatGPT connectivity and Phase 0C visual transport were manually verified: readiness returned the expected static result; image interpretation was `NAMI`, PDF interpretation was `MORI; green`.
 - Public Worker: `https://hibiki-digest-phase0b.themrsean.workers.dev`; MCP endpoint: `https://hibiki-digest-phase0b.themrsean.workers.dev/mcp`.
-- The deployed endpoint still exposes exactly `phase0_probe`, `phase0_image_probe`, and `phase0_pdf_probe`. Slice 1A.2 changes no Worker code, public tools, database boundary, or Wrangler configuration. No deployment was performed.
+- The deployed endpoint exposes exactly `phase0_probe`, `phase0_image_probe`, and `phase0_pdf_probe`. Slice 1B changes no MCP handlers or public tool contract.
 - Validated initial production transport remains direct MCP images and embedded binary `application/pdf` resources. Raw source content stays transient.
 - Local D1: both migrations apply successfully to a fresh isolated database. A separately populated, migration-ledger-tracked 0001 database upgrades through 0002 with foreign-key integrity and existing identifiers/relationships preserved. The persistent local Wrangler database also applied 0002 successfully.
-- Remote D1 is still **NOT provisioned**. No remote database ID or private deployment configuration was added.
+- Production D1 database `hibiki-digest` exists in WNAM with database ID `62a791e5-367a-487f-bb70-140b31e0d055`. `wrangler.jsonc` binds it as `DB`; migrations remain in `migrations/`.
 - [REQUIREMENTS.md](REQUIREMENTS.md) is authoritative; [DATA_MODEL.md](DATA_MODEL.md) describes the final 23-table local schema and upgrade compatibility mappings.
-- Next intended step: explicitly scoped remote D1 provisioning and schema/binding verification before Discord or Google Sheets source integrations.
+- Next intended slice: implement the authenticated production MCP boundary and source retrieval against the existing normalized D1 schema, after selecting the exact scope for that slice. Do not add D1 behavior to the three temporary Phase 0 tools.
+
+## Slice 1B implementation and verification
+
+- Initial `npm run check`: passed (3 test files, 20 tests, typecheck, lint, format check).
+- `npx wrangler whoami`: authenticated as `themrsean@gmail.com`; D1 and Worker write permissions were present.
+- `npx wrangler d1 list`: returned no databases. Created exactly one database named `hibiki-digest`; ID `62a791e5-367a-487f-bb70-140b31e0d055`.
+- Remote migration status before application listed `0001_initial_schema.sql` and `0002_requirement_alignment.sql` as pending. Both applied successfully; remote status afterward listed both as applied.
+- Remote read-only schema verification matched the local migrated product schema: 23 tables, all expected tables and representative 0002 columns, expected indexes, both migration ledger entries, and zero `PRAGMA foreign_key_check` violations. No production rows were inserted.
+- `npm test`: passed (3 files, 20 tests); `npm run typecheck`, `npm run lint`, `npm run format:check`, and final `npm run check`: passed. The migration test fixture now uses the configured D1 ID so its two local migration commands address the same isolated database.
+- `npm run deploy -- --dry-run`: passed and showed `env.DB (hibiki-digest)`. Actual deployment succeeded at `https://hibiki-digest-phase0b.themrsean.workers.dev`, version `962a3c7e-0414-4ab2-ab15-2f1926d8b301`.
+- Remote MCP SDK regression check passed: exactly the same three tools; `phase0_probe` returned `{"service":"HibikiDigest","phase":"0B","status":"ready"}`; image content remained valid `image/png`; PDF content remained an embedded binary `application/pdf` resource.
+- `npm audit --omit=dev`: 3 high-severity OAuth-related transitive findings remain across the MCP client/SDK and `agents`; the suggested remediation is a breaking `agents` change and was not applied.
+- Added `npm run d1:migrate:remote` and read-only `npm run d1:verify:remote` for repeatable operator use. The DB binding is deployed but application D1 behavior remains unimplemented.
 
 ## Slice 1A.2 implementation
 

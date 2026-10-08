@@ -7,6 +7,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "d1:migrate:local": "wrangler d1 migrations apply DB --local",
+    "d1:migrate:remote": "wrangler d1 migrations apply DB --remote",
+    "d1:verify:remote": "node scripts/verify-remote-d1.mjs",
     "dev": "wrangler dev",
     "deploy": "wrangler deploy",
     "typecheck": "tsc --noEmit",

@@ -22,6 +22,7 @@ const WRANGLER_EXECUTABLE = join(
 );
 const D1_TEST_TIMEOUT_MS = 30_000;
 const D1_BINDING = "DB";
+const D1_DATABASE_ID = "62a791e5-367a-487f-bb70-140b31e0d055";
 const LOCAL_STATE_PREFIX = "hibiki-digest-d1-";
 const TABLE_NAMES = [
   "audit_checkpoint",
@@ -237,6 +238,7 @@ describe("local D1 schema", { timeout: D1_TEST_TIMEOUT_MS }, () => {
             {
               binding: D1_BINDING,
               database_name: "hibiki-digest",
+              database_id: D1_DATABASE_ID,
               migrations_dir: upgradeMigrations,
             },
           ],
