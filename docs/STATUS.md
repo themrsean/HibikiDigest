@@ -13,6 +13,12 @@
 
 ## Slice 1C authentication architecture
 
+## Slice 1C.1 quality-gate scope
+
+- Corrected the repository quality-gate scope: `.wrangler/` contains generated Wrangler state and is now ignored by both Git and ESLint.
+- Validation passed with the local `.wrangler/slice1b2-remote.mjs` still present: `npm run lint`, `npm run format:check`, complete `npm run check`, and `npm audit --omit=dev` (zero production vulnerabilities). Git status contains only the intended tracked changes; no `.wrangler/` content is tracked or untracked repository work.
+- Next implementation slice remains authenticated read-only source retrieval, beginning with Discord mechanical retrieval.
+
 - The permanent `/mcp` endpoint is protected by a Cloudflare Access self-hosted application. Access Managed OAuth is enabled, and the Cloudflare One-time PIN identity provider currently supplies verified email identity under an explicit exact-email Access allow policy. The identity provider can change without changing the application contract; the durable requirement is verified email identity plus explicit Access authorization.
 - The approved-email policy remains private Cloudflare configuration. No email addresses, Access tokens, OTPs, Cloudflare credentials, or OAuth client registration details are recorded in the repository. No Google OAuth, Google Cloud project, application-hosted OAuth server, OAuth KV, or HibikiDigest OAuth secrets are used.
 - Manual OAuth discovery verification passed: unauthenticated `/mcp` returned HTTP 401 and pointed `WWW-Authenticate` to `/.well-known/cloudflare-access-protected-resource/mcp`; protected-resource metadata identified the permanent MCP resource and `https://hibikidigest.cloudflareaccess.com` authorization server; authorization-server metadata advertised `authorization_code`, `refresh_token`, PKCE S256, and dynamic client registration.

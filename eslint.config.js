@@ -5,7 +5,7 @@ import globals from "globals";
 
 export default [
   {
-    ignores: ["coverage/**", "dist/**", "node_modules/**"],
+    ignores: ["coverage/**", "dist/**", "node_modules/**", ".wrangler/**"],
   },
   eslint.configs.recommended,
   {
