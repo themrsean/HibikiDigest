@@ -1,6 +1,6 @@
 # Project Status
 
-- Current phase: Phase 1, Slice 1A — **complete** local normalized D1 schema foundation.
+- Current phase: Phase 1, Slice 1A.1 — **complete** durable product requirements and schema-gap review (documentation only). Slice 1A's local normalized D1 schema foundation remains unchanged.
 - Phase 0: **complete**.
 - Phase 0B remote ChatGPT connectivity: **manually verified**. `phase0_probe` at the deployed endpoint returned exactly `{"service":"HibikiDigest","phase":"0B","status":"ready"}`.
 - Phase 0C visual transport: **manually verified**. ChatGPT interpreted the image probe as `NAMI` and the PDF probe as `MORI; green`.
@@ -10,4 +10,21 @@
 - Local D1 foundation: `DB` is configured for local Wrangler use, and `migrations/0001_initial_schema.sql` creates the normalized audit, Discord observation, source-reference, performance, practice, question, poll, and anti-duplication state tables. Focused migration tests use an isolated temporary local D1 database.
 - Deferred user action: create the remote D1 database and add its account-specific database ID to Wrangler configuration in a later, explicitly scoped deployment slice. No remote D1 has been provisioned here.
 - Dependency warning: `npm audit --omit=dev` reports three high-severity transitive MCP OAuth advisories through `agents`. The available automated remediation is a breaking `agents` change; it is deferred from this schema slice.
-- Next intended slice: establish authenticated read-only source retrieval and audit workflow boundaries, after remote D1 provisioning is explicitly authorized.
+- [REQUIREMENTS.md](REQUIREMENTS.md) now captures established product requirements for fresh coding-agent sessions. Slice 1A.1 changes no implementation, migrations, tests, dependencies, Wrangler configuration, or deployed Worker.
+- Slice 1A.1 validation: pre-change and post-change `npm run check` passed (3 test files, 9 tests, type checking, lint, and formatting). `npm audit --omit=dev` exited 1 with the same three high-severity transitive OAuth vulnerabilities; dependencies were not changed.
+- Next work: address known schema gaps before remote provisioning. Authenticated source retrieval and audit workflows remain future implementation work; no remote D1 provisioning occurs in Slice 1A.1.
+
+## Known schema gaps before remote provisioning
+
+Review against `migrations/0001_initial_schema.sql`. These are deferred gaps, not schema changes or implemented behavior. [REQUIREMENTS.md](REQUIREMENTS.md) defines the target; [DATA_MODEL.md](DATA_MODEL.md) describes the existing foundation.
+
+- **Audit modes and partial runs:** `audit_runs` has running/succeeded/failed states, timestamps, and one failure summary. It lacks scheduled/on-demand/baseline mode, partial outcome, useful counts, failed-source details, and authenticated on-demand initiator. Named checkpoints and expiring locks provide a foundation; successful-scheduled-only checkpoint advancement and single-audit locking require workflow enforcement.
+- **Message edits and pins:** observations have edit timestamps but no content hash or pin state for body-free edit/new-pin detection. Source disappearance/validity tracking is absent.
+- **Discord structure:** category/channel names, category relationships, and archival markers exist. `channel_kind` is a semantic classification, not a Discord structural type. Stable guild scope, thread/forum types, parent relationships, and thread archival metadata are not represented.
+- **Provenance:** `source_refs` supports only Discord messages/attachments and requires Discord channel/message IDs. Non-Discord kinds, source URLs, attachment URL/name details, and source validity are absent. Message links can be derived once guild scope is available; author IDs/timestamps exist in observations, but display names and durable provenance beyond those observations are not represented. Sheet-only practices cannot have independent provenance or omit a Discord channel.
+- **Questions:** open/answered/closed differs from required open/partially resolved/resolved. There is no explicit original ask time, most recent relevant activity time, or performance/practice association for retirement and current-state views; `created_at` alone is insufficiently defined as original ask time.
+- **Polls:** subject, overall response total, and open/closed state exist; options and per-option aggregate totals are absent. Voter identities must remain excluded.
+- **Practice absences:** rows require a Discord user ID, while sheet absences may identify people by name and assignments use performer names. Name handling and identity matching for readiness are missing. Practices lack location and plan association; item labels do not explicitly represent song/section detail.
+- **Plan supersession:** references on performances, assignments, and practice items provide traceability, but explicit performance/practice plan identity, current-plan association, version/supersession provenance, and complete-plan replacement boundaries are absent.
+- **Performance current state:** title, one scheduled timestamp, and assignments cover only part of the target. Venue, separate call/arrival and performance times, confirmed performers independent of assignments, ordered repertoire, equipment/logistics, miscellaneous notes, and field-level authority/provenance and contradiction handling are not represented explicitly.
+- **Retention and unsupported facts:** timestamps/reporting keys are a starting point. Resolved-question retention (30 days), audit retention (90 days), reporting retention (approximately one year), past-practice removal, archived-performance cleanup, and sole-source invalidation need lifecycle behavior. Foreign keys have no cascading cleanup configured; related-state removal must be planned.
