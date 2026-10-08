@@ -15,3 +15,9 @@
 - Phase 0 manual ChatGPT validation confirmed direct MCP image content and embedded binary `application/pdf` resources both arrive and can be visually interpreted correctly.
 - The initial production source-delivery strategy uses direct MCP image content for ordinary visual images and embedded binary PDF MCP resources for PDF sources. Phase 1 does not add PDF-to-image conversion or a `resource_link` fallback.
 - Phase 1 begins with a normalized local D1 schema foundation before Discord or Google Sheets source integrations.
+- Slice 1A.2 preserves committed migration 0001 and aligns requirements through forward migration 0002, using deferred-reference table rebuilds when constraints change.
+- Discord semantic channel purpose is independent of structural type; single-guild scope belongs to deployment configuration and retrieval enforcement.
+- Provenance has explicit Discord, attachment, linked-URL, and practice-sheet kinds with nullable applicable metadata and invalidation state. Operational source failures use relational rows rather than JSON/raw content.
+- Performance and practice plans have separate lightweight identities and at most one current plan per owner. Plan-derived assignments/items use composite ownership references; full replacement on supersession is a future application transaction.
+- Current performance scalar facts remain typed columns. A finite field-to-source support relation allows multiple sources without duplicating performance records or using an EAV value store. Other normalized performance facts retain row-level provenance.
+- Practice absences use human names with optional Discord IDs; no member-management model is required. Questions use open/partially_resolved/resolved semantics; retirement remains deletion behavior.
